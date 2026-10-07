@@ -53,3 +53,45 @@ diskutil eject disk4
 - This time the installation worked as expected.  
 
 image::assets/helios_install_success.jpg[]  
+
+
+## Networking
+
+Following the guide for getting the system connected to the network I ran the following commands.  
+
+[source,shell]
+----
+dladm show-ether
+dladm show-phys -m
+----
+
+Both commands came back with any output.  My hardware is using Realtek 2.5G nics, so these don't appear to be part of the image.  I wouldn't expect them to be since they are consumer and not enterprise hardware.  
+
+[source,shell]
+----
+# check to see if OS can see the devices
+prtconf -v |grep -i network
+
+# check the log for network messages
+grep -i network /var/adm/messages
+----
+
+image::assets/helios_network_error.jpg[]  
+
+### Add driver for NIC
+
+Will return to add drivers later. It appears to be the `r8125` driver per my initial Google search. 
+
+[source,shell]
+----
+# mount usb
+
+# copy driver into place
+cp <driver> /kernel/drv/amd64/<r8125> # check this for accuracy
+
+# load driver
+add_drv -i '"pci10edc,8125"' r8125 # check this for accuracy
+
+# rescan for driver
+devfsadm -i net # check this for accuracy
+----
