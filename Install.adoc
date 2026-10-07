@@ -1,0 +1,48 @@
+# Installing Helios
+
+:TOC:
+xref:./README.md[Front Page Link]
+
+## Intro
+I'm installing Helios on my physical device and using the image and instructions from the https://github.com/oxidecomputer/helios-engvm#installing-on-a-physical-machine-using-the-iso[Oxide GitHub].  
+
+Per the documentation I downloaded the `vga` image from the https://pkg.oxide.computer/install/latest/[pkg site].  
+
+## Attempt 01
+
+I put the image on a drive that I already had setup with Ventoy and was able to boot to the command prompt
+
+[source,shell]
+----
+diskinfo
+
+# install-helios <hostname> <diskinfo number>
+install-helios k12-helios <DISK>
+----
+
+This attempted to install but couldn't find the ISO.  
+
+image::assets/ventoy_install_error.jpg[]  
+
+
+## Attempt 02
+
+I have an old 16G flash drive and wrote the ISO to it.  
+
+From the MacOS terminal I ran these commands to write the image to disk.  
+
+[source,shell]
+----
+diskutil list # Use this to get the device disk number
+
+  /dev/disk4 (external, physical):
+     #:                       TYPE NAME                    SIZE       IDENTIFIER
+     0:     FDisk_partition_scheme                        *16.1 GB    disk4
+
+diskutil unmountDisk disk4 # unmount the drive so we can over write it
+
+sudo dd if=/Users/mlitsey/Downloads/helios-install-vga.iso of=/dev/disk4 bs=8m # Write ISO to disk. There will be no output
+
+diskutil eject disk4 # use if the system doesn't automatically ask to eject the drive
+----
+
