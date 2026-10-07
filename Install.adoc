@@ -10,14 +10,14 @@ Per the documentation I downloaded the `vga` image from the https://pkg.oxide.co
 
 ## Attempt 01
 
-I put the image on a drive that I already had setup with Ventoy and was able to boot to the command prompt
+I put the image on a drive that I already had setup with https://www.ventoy.net/en/index.html[Ventoy] and was able to boot to the command prompt
 
 [source,shell]
 ----
 diskinfo
 
-# install-helios <hostname> <diskinfo number>
-install-helios k12-helios <DISK>
+# Example: install-helios <hostname> <diskinfo number>
+install-helios k12-helios c2t0C82D52507001812d0
 ----
 
 This attempted to install but couldn't find the ISO.  
@@ -29,20 +29,27 @@ image::assets/ventoy_install_error.jpg[]
 
 I have an old 16G flash drive and wrote the ISO to it.  
 
-From the MacOS terminal I ran these commands to write the image to disk.  
+From the macOS terminal I ran these commands to write the image to disk.  
 
 [source,shell]
 ----
-diskutil list # Use this to get the device disk number
+# Use this to get the device disk number
+diskutil list 
 
   /dev/disk4 (external, physical):
      #:                       TYPE NAME                    SIZE       IDENTIFIER
      0:     FDisk_partition_scheme                        *16.1 GB    disk4
 
-diskutil unmountDisk disk4 # unmount the drive so we can over write it
+# unmount the drive so we can over write it
+diskutil unmountDisk disk4 
 
-sudo dd if=/Users/mlitsey/Downloads/helios-install-vga.iso of=/dev/disk4 bs=8m # Write ISO to disk. There will be no output
+# Write ISO to disk. There will be no output
+sudo dd if=/Users/mlitsey/Downloads/helios-install-vga.iso of=/dev/disk4 bs=8m 
 
-diskutil eject disk4 # use if the system doesn't automatically ask to eject the drive
+# use if the system doesn't automatically ask to eject the drive
+diskutil eject disk4 
 ----
 
+- This time the installation worked as expected.  
+
+image::assets/helios_install_success.jpg[]  
