@@ -57,7 +57,7 @@ image::assets/helios_install_success.jpg[]
 
 ## Networking
 
-Following the guide for getting the system connected to the network I ran the following commands.  
+Following the guide for getting the system connected to the network, I ran the following commands.  
 
 [source,shell]
 ----
@@ -65,7 +65,7 @@ dladm show-ether
 dladm show-phys -m
 ----
 
-Both commands came back with any output.  My hardware is using Realtek 2.5G nics, so these don't appear to be part of the image.  I wouldn't expect them to be since they are consumer and not enterprise hardware.  
+Both commands came back without any output.  My hardware is using Realtek 2.5G nics, these don't appear to be part of the image.  I wouldn't expect them to be since they are consumer and not enterprise hardware.  
 
 [source,shell]
 ----
