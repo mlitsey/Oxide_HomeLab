@@ -1,14 +1,18 @@
-# Installing Helios
+= Installing Helios
 
 :TOC:
+:toclevels: 1
+:sectnums:
+:icons: font
+:source-highlighter: rouge  
 xref:./README.md[Front Page Link]
 
-## Intro
+== Intro
 I'm installing Helios on my physical device and using the image and instructions from the https://github.com/oxidecomputer/helios-engvm#installing-on-a-physical-machine-using-the-iso[Oxide GitHub].  
 
 Per the documentation I downloaded the `vga` image from the https://pkg.oxide.computer/install/latest/[pkg site].  
 
-## Attempt 01
+== Attempt 01
 
 I put the image on a drive that I already had setup with https://www.ventoy.net/en/index.html[Ventoy] and was able to boot to the command prompt
 
@@ -25,7 +29,7 @@ This attempted to install but couldn't find the ISO.
 image::assets/ventoy_install_error.jpg[]  
 
 
-## Attempt 02
+== Attempt 02
 
 I have an old 16G flash drive and wrote the ISO to it.  
 
@@ -55,7 +59,7 @@ diskutil eject disk4
 image::assets/helios_install_success.jpg[]  
 
 
-## Networking
+== Networking
 
 Following the guide for getting the system connected to the network, I ran the following commands.  
 
@@ -78,7 +82,7 @@ grep -i network /var/adm/messages
 
 image::assets/helios_network_error.jpg[]  
 
-### Add driver for NIC
+=== Add driver for NIC
 
 Found this https://illumos.topicbox.com/groups/bugs/T2ca4088e26d7b6a2-M0c753e3d7d694026e5f1d9b6/illumos-gate-bug-13729-driver-issue-with-realtek-rtl8125[Work Around] that force enables the RTL8125 driver. 
 
