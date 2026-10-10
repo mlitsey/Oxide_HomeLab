@@ -146,7 +146,7 @@ WARNING: **Looks like 119GB isn't enough to install on.**
 
 image::./assets/file_system_full.png[]  
 
-== Atempt 04: New Drive
+== Attempt 04: New Drive
 
 :rofl: 
 
@@ -189,11 +189,11 @@ ssh -i ~/.ssh/<oxide key> 192.168.35.24
     mlitsey password? 
 ----
 
-The `ssh -i` method wouldn't need a user password.  It should be asking for the ssh-key passoword.  I check the Helios system and found that the account wasn't being created.  
+The `ssh -i` method wouldn't need a user password.  It should be asking for the ssh-key passoword.  I checked the Helios system and found that the account wasn't being created.  
 
-I tried using just the `nc -l 1701` and found I could see the output from the script, but again no user was created.  
+I tried using just the `nc -l 1701` command and found I could see the output from the script, but again no user was created.  
 
-I then tried `nc -l 1701 | bash -x` this appeared to be the same as the previous command.  I checked the `/home` directory and saw my account had been created, and I could log in via ssh using my key.  
+I then tried `nc -l 1701 | bash -x` and this appeared to be the same as the previous command.  I checked the `/home` directory and saw my account had been created, and I could log in via ssh using my key.  
 
 image::./assets/helios_login.png[]  
 
@@ -201,8 +201,7 @@ I tried to get to root using `sudo -i` and was asked for a password.  I checked 
 
 image::./assets/sudo_issue.png[]  
 
-
-Since I still had my root session open, I used `visudo` and added myself as a sudoer.  Now I could get to room from my ssh session.  I also added some color to my prompt via the `~/.profile`
+Since I still had my root session open, I used `visudo` and added myself as a sudoer.  Now I could get to root from my ssh session.  I also added some color to my prompt via the `~/.profile`
 
 [source,bash]
 ----
