@@ -126,3 +126,94 @@ My final try at getting this to work was using `ifconfig` commands to use an eph
 
 I have ordered a https://www.amazon.com/Ethernet-1000Mbps-Low-Profile-Industrial-Embedded/dp/B0GXXRTQPQ/ref=sr_1_3?crid=2YH83X2EH4L16&dib=eyJ2IjoiMSJ9.Y-XUYZcKG-EZ76IEnHOrUtJr9umTiv6pAu68jWz-OkRqRcecuTuVFjgKxm2h5tpDVaPpAYf8cpUPq_7bH4UgAICOdE_rbqPwTRUxwifXes-v1xAR6rMAa94LOK2QGYOx2JFB-cT-vnOz4gn4m91U7R2CubV4NRLGdnsz_17UXOnTBf19uLZ1w6_vwktZqwhpqhHqtBc8kldHQpTz-54FNNvPzD3d_5w2oC-Oz1ZZAFg.bVRDyqk_Ai7_n3WdrJwObBf6kdnvMc7bqONf1jfkxbI&dib_tag=se&keywords=M.2+B%2BM+Key+Gigabit+Ethernet+Network+Card%2C+Intel+I210+Chip&nsdOptOutParam=true&qid=1791427110&sprefix=m.2+b%2Bm+key+gigabit+ethernet+network+card%2C+intel+i210+chip+%2Caps%2C186&sr=8-3[M.2 intel card] that I will try next.  If that doesn't work I may move to using my Dell PowerEdge r730xd for testing.  
 
+== Attempt 03: Dell Server
+
+I was sent the wrong M.2 NIC and it didn't work.  It was another Realtek chipset.  I'm now trying to load on a spare ssd on my Dell r730xd server. 
+
+I powered down, ejected all of the drives in the server, and installed a 128GB SSD.  I then used the iDRAC to launch a virtual console.  From there I connected Virtual media, selected the https://pkg.oxide.computer/install/latest/[Helios ISO], and selected the Virtual CD/DVD for next reboot. 
+
+First thing I noticed is the speed to load was much slower on this device through the iDRAC virtual console.  Commands would take up to 1 minute to complete.  
+
+image::./assets/iDRAC_media.png[]  
+
+image::./assets/iDRAC_next_boot.png[]  
+
+image::./assets/iDRAC_install.png[]  
+
+IMPORTANT: file system full
+
+WARNING: **Looks like 119GB isn't enough to install on.**  
+
+image::./assets/file_system_full.png[]  
+
+== Atempt 04: New Drive
+
+:rofl: 
+
+I got a new drive and FINALLY got the system installed.  
+
+One of the things I noticed on the GMKtec was `history` didn't persist through a reboot.  Not sure why this is turned off, but I enabled it and added some other items.  
+
+Here are some of the things I did.  
+
+[source,bash]
+----
+# enable history
+touch ~/.bash_history
+
+# capture current history
+history -a
+
+# setup aliases from Linux - didn't read from ~/.bashrc automatically
+echo "alias ll='ls -lh'" >> ~/.profile
+echo "alias la='ls -lah'" >> ~/.profile
+echo "alias lr='ls -ltrah'" >> ~/.profile
+----
+
+image::./assets/network_setup.png[]  
+
+== User Setup
+
+I had issues with transferring my ssh-key over to the system and setting up my account. 
+
+[source,bash]
+----
+# from documentation
+# Helios Server
+nc -l 1701 </dev/null | bash -x
+
+# macOS laptop
+./aws/gen_userdata.sh | nc 192.168.35.24 1701
+
+ssh -i ~/.ssh/<oxide key> 192.168.35.24
+    mlitsey password? 
+----
+
+The `ssh -i` method wouldn't need a user password.  It should be asking for the ssh-key passoword.  I check the Helios system and found that the account wasn't being created.  
+
+I tried using just the `nc -l 1701` and found I could see the output from the script, but again no user was created.  
+
+I then tried `nc -l 1701 | bash -x` this appeared to be the same as the previous command.  I checked the `/home` directory and saw my account had been created, and I could log in via ssh using my key.  
+
+image::./assets/helios_login.png[]  
+
+I tried to get to root using `sudo -i` and was asked for a password.  I checked my account using `id mlitsey` and found I wasn't in the wheel or any admin groups.  
+
+image::./assets/sudo_issue.png[]  
+
+
+Since I still had my root session open, I used `visudo` and added myself as a sudoer.  Now I could get to room from my ssh session.  I also added some color to my prompt via the `~/.profile`
+
+[source,bash]
+----
+# root prompt
+export PS1='\[\033[01;31m\]\u\[\033[01;33m\]@\[\033[01;36m\]\h\[\033[01;33m\]:\w \[\033[01;35m\]\$ \[\033[00m\]'
+
+# user prompt
+export PS1='\[\033[01;32m\]\u\[\033[01;33m\]@\[\033[01;36m\]\h\[\033[01;33m\]:\w \[\033[01;35m\]\$ \[\033[00m\]'
+----
+
+image::./assets/sudo_fixed.png[]  
+
+At this point I continued with the installation steps from https://github.com/oxidecomputer/helios-engvm[helios-engvm] documentation.  
+
