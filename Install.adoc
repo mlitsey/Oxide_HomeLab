@@ -1,11 +1,15 @@
 = Installing Helios
-
-:TOC:
+[#top]
+:toc:
 :toclevels: 1
 :sectnums:
 :icons: font
-:source-highlighter: rouge  
-xref:./README.md[Front Page Link]
+:source-highlighter: rouge 
+:top-of-page: <<top, Top of Page>>   
+
+link:./README.md[Front Page Link]  
+
+
 
 == Intro
 I'm installing Helios on my physical device and using the image and instructions from the https://github.com/oxidecomputer/helios-engvm#installing-on-a-physical-machine-using-the-iso[Oxide GitHub].  
@@ -58,6 +62,7 @@ diskutil eject disk4
 
 image::assets/helios_install_success.jpg[]  
 
+{top-of-page}  
 
 == Networking
 
@@ -126,6 +131,8 @@ My final try at getting this to work was using `ifconfig` commands to use an eph
 
 I have ordered a https://www.amazon.com/Ethernet-1000Mbps-Low-Profile-Industrial-Embedded/dp/B0GXXRTQPQ/ref=sr_1_3?crid=2YH83X2EH4L16&dib=eyJ2IjoiMSJ9.Y-XUYZcKG-EZ76IEnHOrUtJr9umTiv6pAu68jWz-OkRqRcecuTuVFjgKxm2h5tpDVaPpAYf8cpUPq_7bH4UgAICOdE_rbqPwTRUxwifXes-v1xAR6rMAa94LOK2QGYOx2JFB-cT-vnOz4gn4m91U7R2CubV4NRLGdnsz_17UXOnTBf19uLZ1w6_vwktZqwhpqhHqtBc8kldHQpTz-54FNNvPzD3d_5w2oC-Oz1ZZAFg.bVRDyqk_Ai7_n3WdrJwObBf6kdnvMc7bqONf1jfkxbI&dib_tag=se&keywords=M.2+B%2BM+Key+Gigabit+Ethernet+Network+Card%2C+Intel+I210+Chip&nsdOptOutParam=true&qid=1791427110&sprefix=m.2+b%2Bm+key+gigabit+ethernet+network+card%2C+intel+i210+chip+%2Caps%2C186&sr=8-3[M.2 intel card] that I will try next.  If that doesn't work I may move to using my Dell PowerEdge r730xd for testing.  
 
+{top-of-page}  
+
 == Attempt 03: Dell Server
 
 I was sent the wrong M.2 NIC and it didn't work.  It was another Realtek chipset.  I'm now trying to load on a spare ssd on my Dell r730xd server. 
@@ -145,6 +152,8 @@ IMPORTANT: file system full
 WARNING: **Looks like 119GB isn't enough to install on.**  
 
 image::./assets/file_system_full.png[]  
+
+{top-of-page}  
 
 == Attempt 04: New Drive
 
@@ -171,6 +180,8 @@ echo "alias lr='ls -ltrah'" >> ~/.profile
 ----
 
 image::./assets/network_setup.png[]  
+
+{top-of-page}  
 
 == User Setup
 
@@ -216,3 +227,5 @@ image::./assets/sudo_fixed.png[]
 
 At this point I continued with the installation steps from https://github.com/oxidecomputer/helios-engvm[helios-engvm] documentation.  
 
+
+{top-of-page}  
