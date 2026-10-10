@@ -11,7 +11,12 @@ The install will be on a [GMKtec NUCBOX K12](https://www.gmktec.com/products/gmk
     - 64 GB RAM
     - 2 TiB NVME
 
+Moved to using a **Dell R730xd** for installation.  I was unable to get network drivers to work properly. 
+
+
 I'll also start using [AsciiDoc](https://docs.asciidoctor.org/asciidoc/latest/) (.adoc) for documentation in this test.  It is similar to the [Markdown](https://www.markdownguide.org/) (.md) format.  
 
 
+## Info Pages
 [Installation](./Install.adoc)  
+[Command Comparison](./linux-to-illumos-command-reference.adoc)  

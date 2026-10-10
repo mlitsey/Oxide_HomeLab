@@ -1,0 +1,554 @@
+= Linux to illumos Command Reference
+:toc:
+:toclevels: 2
+:sectnums:
+:icons: font
+:source-highlighter: rouge
+
+NOTE: I asked ChatGPT to give me a comparison of Linux to Illumos commands. Below is what it produced for me based on my sill set. 
+
+== Purpose
+
+This is a practical reference to common Linux commands and their illumos counterparts. It is organized by task, not by a claimed universal popularity ranking: no single authoritative “top 250 Linux commands by usage” list exists.
+
+[IMPORTANT]
+====
+Command availability and options vary by illumos distribution and release. Helios, SmartOS, and OpenIndiana should not be assumed to provide identical tools. Check the target system's manual pages before using commands that modify configuration, storage, services, or security settings.
+====
+
+Legend:
+
+* *Same / similar* — the command exists and its basic purpose is familiar; options may differ.
+* *Different* — use the listed illumos equivalent or a different workflow.
+* *Optional* — the command may need to be installed.
+
+== 1. Navigation, files, and directories
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|1 |`pwd` |`pwd` — print the current directory
+|2 |`ls` |`ls` — list files
+|3 |`cd` |`cd` — change directory
+|4 |`find` |`find` — search directory trees
+|5 |`locate` |`locate`, if installed and its database is configured
+|6 |`tree` |`tree`, if installed; otherwise `find . -print`
+|7 |`stat` |`stat`; verify supported options
+|8 |`file` |`file`
+|9 |`basename` |`basename`
+|10 |`dirname` |`dirname`
+|11 |`mkdir` |`mkdir`
+|12 |`rmdir` |`rmdir`
+|13 |`touch` |`touch`
+|14 |`cp` |`cp`
+|15 |`mv` |`mv`
+|16 |`rm` |`rm`
+|17 |`ln` |`ln`
+|18 |`readlink` |`readlink`, availability/options may vary
+|19 |`realpath` |`realpath`, if available; `pwd -P` prints the physical current directory
+|20 |`install` |`install`, if available
+|21 |`mktemp` |`mktemp`
+|22 |`basename` |`basename`
+|23 |`pathchk` |`pathchk`
+|24 |`chmod` |`chmod`
+|25 |`chown` |`chown`
+|===
+
+== 2. Reading, searching, and editing text
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|26 |`cat` |`cat`
+|27 |`less` |`less`, if installed; `more` is commonly available
+|28 |`more` |`more`
+|29 |`head` |`head`
+|30 |`tail` |`tail`
+|31 |`grep` |`grep`; use `ggrep` for GNU grep if installed
+|32 |`egrep` |`grep -E`
+|33 |`fgrep` |`grep -F`
+|34 |`sed` |`sed`; check GNU-specific options
+|35 |`awk` |`nawk` or `awk`; `gawk` may be installed
+|36 |`cut` |`cut`
+|37 |`sort` |`sort`; option support may differ
+|38 |`uniq` |`uniq`
+|39 |`wc` |`wc`
+|40 |`tr` |`tr`
+|41 |`tee` |`tee`
+|42 |`diff` |`diff`
+|43 |`cmp` |`cmp`
+|44 |`comm` |`comm`
+|45 |`paste` |`paste`
+|46 |`join` |`join`
+|47 |`xargs` |`xargs`; check options such as GNU `-r`
+|48 |`printf` |`printf`
+|49 |`od` |`od`
+|50 |`strings` |`strings`
+|===
+
+== 3. Permissions, users, and groups
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|51 |`id` |`id`
+|52 |`whoami` |`whoami`
+|53 |`who` |`who`
+|54 |`w` |`w`
+|55 |`groups` |`groups`
+|56 |`getent` |`getent`
+|57 |`passwd` |`passwd`
+|58 |`useradd` |`useradd`; verify Solaris account options
+|59 |`usermod` |`usermod`; syntax and group handling may differ
+|60 |`userdel` |`userdel`
+|61 |`groupadd` |`groupadd`
+|62 |`groupmod` |`groupmod`
+|63 |`groupdel` |`groupdel`
+|64 |`chgrp` |`chgrp`
+|65 |`umask` |`umask`
+|66 |`su` |`su`
+|67 |`sudo` |`sudo`, if installed and configured
+|68 |`visudo` |`visudo`, if sudo is installed
+|69 |`chage` |No universal direct equivalent; inspect `passwd -s` and account policy tools
+|70 |`last` |`last`
+|71 |`lastlog` |No direct universal equivalent; inspect `last`, account databases, and audit records
+|72 |`newgrp` |`newgrp`
+|73 |`logname` |`logname`
+|74 |`finger` |`finger`, if installed
+|75 |`authselect` |No direct equivalent; use Solaris/illumos naming, PAM, and RBAC configuration
+|===
+
+== 4. Processes and system performance
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|76 |`ps` |`ps`; options differ from Linux
+|77 |`top` |`prstat`
+|78 |`htop` |`htop`, if installed; otherwise `prstat`
+|79 |`pgrep` |`pgrep`
+|80 |`pkill` |`pkill`
+|81 |`kill` |`kill`
+|82 |`killall` |`pkill` is often preferable; beware Solaris `killall` semantics
+|83 |`nice` |`nice`
+|84 |`renice` |`renice`
+|85 |`nohup` |`nohup`
+|86 |`jobs` |Shell builtin `jobs`
+|87 |`bg` |Shell builtin `bg`
+|88 |`fg` |Shell builtin `fg`
+|89 |`free` |`vmstat`, `prtconf`, and `kstat` for memory information
+|90 |`vmstat` |`vmstat`
+|91 |`iostat` |`iostat`
+|92 |`mpstat` |`mpstat`, if available; otherwise `prstat` and `vmstat`
+|93 |`sar` |`sar`, if the relevant accounting tools are installed/configured
+|94 |`uptime` |`uptime`
+|95 |`time` |`time`; shell implementations may differ
+|96 |`strace` |`truss`
+|97 |`ltrace` |No universal direct equivalent; use `truss` for system-call tracing
+|98 |`lsof` |`pfiles PID` for process file descriptors
+|99 |`fuser` |`fuser`
+|100 |`pidof` |`pgrep -x process_name`, where appropriate
+|===
+
+=== Important process-troubleshooting differences
+
+Linux `top` is commonly replaced by illumos `prstat`:
+
+[source,shell]
+----
+prstat
+prstat -a
+prstat -L -p PID
+----
+
+Linux `strace` has a close illumos counterpart in `truss`:
+
+[source,shell]
+----
+truss -p PID
+truss -f /usr/bin/true
+----
+
+Check `man truss` for options supported by the installed release.
+
+For process file descriptors and sockets, use:
+
+[source,shell]
+----
+pfiles PID
+fuser /path/to/file
+----
+
+== 5. Filesystems, disks, and storage
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|101 |`df` |`df -h`
+|102 |`du` |`du -sh /path`
+|103 |`lsblk` |`format`, `cfgadm`, `iostat -En`
+|104 |`blkid` |`fstyp`, `prtvtoc`, and `format`, as appropriate
+|105 |`mount` |`mount`
+|106 |`umount` |`umount`
+|107 |`findmnt` |`mount`, `df -k`, and `/etc/vfstab`
+|108 |`fdisk` |`format`; partitioning support depends on disk and label
+|109 |`parted` |`format` and `prtvtoc` for supported disk layouts
+|110 |`mkfs` |`newfs` for UFS; `zpool`/`zfs` for ZFS
+|111 |`fsck` |`fsck`
+|112 |`tune2fs` |No direct equivalent for ext filesystems; illumos uses different filesystem tools
+|113 |`mkswap` |No direct equivalent; swap is configured through Solaris/illumos mechanisms
+|114 |`swapon` |`swap`
+|115 |`swapoff` |`swap` and `swap -d` for removing configured swap devices/files
+|116 |`losetup` |No general one-to-one equivalent; use platform device and storage facilities
+|117 |`hdparm` |`iostat -En`, `format`, and device-specific tools
+|118 |`smartctl` |`smartctl`, if installed and supported by the device
+|119 |`mdadm` |No direct equivalent; ZFS pools or hardware RAID serve different roles
+|120 |`lsscsi` |`cfgadm`, `format`, and `iostat -En`
+|121 |`blkdiscard` |Device/driver-specific; no universal equivalent
+|122 |`fstrim` |Filesystem/device-specific; verify support before use
+|123 |`xfs_info` |`zfs get` for ZFS properties; no direct XFS equivalent
+|124 |`zpool` |`zpool` — native ZFS pool management
+|125 |`zfs` |`zfs` — native ZFS filesystem and dataset management
+|===
+
+=== Storage examples
+
+[source,shell]
+----
+# Show filesystem capacity
+df -h
+
+# Show disk I/O and errors
+iostat -En
+
+# Inspect disks and disk configuration
+format
+
+# List configurable devices
+cfgadm -al
+
+# Inspect ZFS pool health
+zpool status
+
+# List ZFS datasets
+zfs list
+
+# Inspect ZFS properties
+zfs get all pool/dataset
+----
+
+For Oxide/Helios, learn ZFS pools, datasets, snapshots, checksums, resilvering, and fault diagnosis in addition to the Linux `lsblk`/`mount` workflow.
+
+== 6. Networking and connectivity
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|126 |`ip addr` |`ipadm show-addr`
+|127 |`ip link` |`dladm show-link`
+|128 |`ip route` |`netstat -rn`, `route`
+|129 |`ifconfig` |`ifconfig`; modern persistent configuration uses `ipadm`
+|130 |`route` |`route`
+|131 |`arp` |`arp`; `ip neigh` has no exact traditional command equivalent
+|132 |`ip neigh` |`arp -an` for IPv4 neighbor information
+|133 |`ss` |`netstat -an`; `pfiles PID` for process socket details
+|134 |`netstat` |`netstat`
+|135 |`ping` |`ping`
+|136 |`ping6` |IPv6 syntax varies by release; check `man ping`
+|137 |`traceroute` |`traceroute`
+|138 |`tracepath` |`traceroute`; no universal direct equivalent
+|139 |`mtr` |`mtr`, if installed; otherwise `traceroute` and `ping`
+|140 |`dig` |`dig`, if installed
+|141 |`nslookup` |`nslookup`
+|142 |`host` |`host`, if installed
+|143 |`resolvectl` |No direct equivalent; inspect `/etc/resolv.conf` and naming services
+|144 |`curl` |`curl`, if installed
+|145 |`wget` |`wget`, if installed
+|146 |`nc` |`nc`, if installed; options depend on implementation
+|147 |`telnet` |`telnet`, if installed
+|148 |`ssh` |`ssh`
+|149 |`scp` |`scp`
+|150 |`sftp` |`sftp`
+|===
+
+=== The important networking difference: `ip` versus `ipadm` and `dladm`
+
+On Linux, you may use:
+
+[source,shell]
+----
+ip addr show
+ip link show
+ip route show
+----
+
+On illumos, use:
+
+[source,shell]
+----
+# IP interfaces and addresses
+ipadm show-if
+ipadm show-addr
+
+# Data links and physical interfaces
+dladm show-link
+dladm show-phys
+
+# Routing table
+netstat -rn
+
+# Interface information
+ifconfig -a
+----
+
+`ipadm` and `dladm` are separate administration interfaces for IP configuration and data links. Persistent configuration and interface properties are managed differently from Linux.
+
+== 7. System services, boot, and logs
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|151 |`systemctl` |`svcs`, `svcadm`, `svccfg`
+|152 |`systemctl status` |`svcs -xv service-name`
+|153 |`systemctl start` |`svcadm enable service-name` for an SMF service
+|154 |`systemctl stop` |`svcadm disable service-name`
+|155 |`systemctl restart` |`svcadm restart service-name`
+|156 |`systemctl list-units` |`svcs -a`
+|157 |`journalctl` |`/var/adm/messages`, `svcs -xv`, and service logs
+|158 |`dmesg` |`dmesg`
+|159 |`logger` |`logger`
+|160 |`logrotate` |`logadm`
+|161 |`crontab` |`crontab`
+|162 |`at` |`at`, if the service is enabled
+|163 |`systemd-analyze` |No direct equivalent; use boot/service diagnostics and SMF
+|164 |`reboot` |`reboot`
+|165 |`shutdown` |`shutdown`
+|166 |`halt` |`halt`
+|167 |`poweroff` |`poweroff`, where available
+|168 |`hostnamectl` |`hostname`; inspect network configuration separately
+|169 |`timedatectl` |`date`, service status, and time-service configuration
+|170 |`chronyc` |`ntpq` or other tools depending on installed time software
+|171 |`ntpq` |`ntpq`, if the NTP implementation is installed
+|172 |`journalctl -k` |`dmesg` and `/var/adm/messages`
+|173 |`coredumpctl` |`coreadm`, core files, and debugger tools
+|174 |`systemd-cgtop` |`prstat -c` and other process/resource monitoring
+|175 |`sysctl` |`ndd` for applicable legacy network parameters; `kstat` and `mdb` for other diagnostics
+|===
+
+=== Learn SMF instead of translating every `systemctl` command
+
+illumos uses the *Service Management Facility (SMF)*. Start with:
+
+[source,shell]
+----
+# List services
+svcs -a
+
+# Find services that need attention
+svcs -xv
+
+# Inspect a service
+svcs -l svc:/network/ssh:default
+
+# Enable a service
+svcadm enable svc:/network/ssh:default
+
+# Disable a service
+svcadm disable svc:/network/ssh:default
+
+# Restart a service
+svcadm restart svc:/network/ssh:default
+
+# Inspect service configuration interactively
+svccfg
+----
+
+The service identifier above is an example. Verify the actual FMRI on your distribution. SMF tracks service dependencies and failure states, not just process state.
+
+== 8. Packages, software installation, and updates
+
+Package management depends on the illumos distribution. SmartOS, OpenIndiana, and Oxide Helios should not automatically be assumed to have identical package workflows.
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|176 |`apt` |`pkg` on IPS-based distributions; not Linux APT
+|177 |`apt-get` |`pkg install` on IPS systems
+|178 |`apt-cache` |`pkg search` on IPS systems
+|179 |`dpkg` |`pkg` on IPS systems; no direct Debian package database equivalent
+|180 |`dnf` |`pkg` on IPS systems; not a universal illumos equivalent
+|181 |`yum` |`pkg` on IPS systems
+|182 |`rpm` |No universal RPM equivalent; depends on the distribution
+|183 |`zypper` |`pkg` on IPS systems
+|184 |`pacman` |`pkg` on IPS systems
+|185 |`snap` |No universal equivalent
+|186 |`flatpak` |No universal equivalent
+|187 |`which` |`which`
+|188 |`whereis` |`whereis`
+|189 |`type` |Shell builtin `type`
+|190 |`command -v` |Shell builtin `command -v`
+|191 |`ldd` |`ldd`
+|192 |`ldconfig` |No universal direct equivalent; inspect runtime linker configuration
+|193 |`make` |`make`, if installed
+|194 |`gcc` |`gcc`, if installed
+|195 |`git` |`git`, if installed
+|196 |`python3` |`python3`, if installed
+|197 |`perl` |`perl`, if installed
+|198 |`ruby` |`ruby`, if installed
+|199 |`java` |`java`, if installed
+|200 |`docker` |Distribution-specific; not a universal illumos-native command
+|===
+
+=== IPS package examples
+
+On an IPS-based distribution, the command family is typically:
+
+[source,shell]
+----
+# Search for a package
+pkg search package-name
+
+# Install a package
+pkg install package-name
+
+# List installed packages
+pkg list
+
+# Show package information
+pkg info package-name
+
+# Review configured publishers
+pkg publisher
+----
+
+These commands apply to IPS-based systems, not necessarily every illumos derivative or Helios deployment. Confirm the actual environment before installing software or changing packages.
+
+== 9. Archives, compression, shell, and scripting
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|201 |`tar` |`tar`; GNU-specific options may differ
+|202 |`gzip` |`gzip`
+|203 |`gunzip` |`gunzip`
+|204 |`bzip2` |`bzip2`, if installed
+|205 |`xz` |`xz`, if installed
+|206 |`zip` |`zip`, if installed
+|207 |`unzip` |`unzip`, if installed
+|208 |`zcat` |`zcat`; implementation and compression formats may vary
+|209 |`base64` |`base64`, if available; verify options
+|210 |`md5sum` |`digest -a md5 file`
+|211 |`sha256sum` |`digest -a sha256 file`
+|212 |`cksum` |`cksum`
+|213 |`bash` |`bash`, if installed; default shell may differ
+|214 |`sh` |`sh`
+|215 |`zsh` |`zsh`, if installed
+|216 |`env` |`env`
+|217 |`export` |Shell builtin `export`
+|218 |`source` |Bash/Zsh builtin; POSIX `sh` uses `.`
+|219 |`set` |Shell builtin `set`
+|220 |`unset` |Shell builtin `unset`
+|221 |`alias` |Shell builtin `alias`
+|222 |`history` |Shell-specific; available in Bash and other interactive shells
+|223 |`read` |Shell builtin `read`
+|224 |`test` |`test` or `[ ... ]`
+|225 |`expr` |`expr`
+|===
+
+== 10. Security, diagnostics, and administration
+
+[cols="1,1,3",options="header"]
+|===
+|# |Linux command |illumos equivalent / example
+
+|226 |`sudo` |`sudo`, if installed; native RBAC is also important
+|227 |`su` |`su`
+|228 |`ssh-keygen` |`ssh-keygen`
+|229 |`ssh-agent` |`ssh-agent`
+|230 |`ssh-add` |`ssh-add`
+|231 |`openssl` |`openssl`, if installed
+|232 |`gpg` |`gpg`, if installed
+|233 |`iptables` |No direct equivalent; inspect the platform's firewall facilities
+|234 |`nft` |No direct equivalent; firewall implementation depends on distribution
+|235 |`firewall-cmd` |No universal equivalent; inspect the installed firewall service
+|236 |`auditctl` |`auditconfig` and `audit`
+|237 |`ausearch` |`auditreduce` and `praudit`
+|238 |`aureport` |`auditstat` and `praudit`, depending on the reporting task
+|239 |`getenforce` |Not a universal illumos command; SELinux is not the standard illumos security model
+|240 |`setenforce` |No direct equivalent; illumos uses different security mechanisms
+|241 |`dtrace` |`dtrace` — native dynamic tracing
+|242 |`mdb` |`mdb` — modular debugger for kernel and user processes
+|243 |`pstack` |`pstack`
+|244 |`pmap` |`pmap`
+|245 |`pldd` |`pldd`, where available; otherwise inspect process mappings and linker information
+|246 |`prctl` |`prctl` — inspect or modify process/resource controls
+|247 |`projects` |`projects` — display project membership
+|248 |`newtask` |`newtask` — execute a command in a project/task context
+|249 |`zoneadm` |`zoneadm` — manage Zones
+|250 |`zlogin` |`zlogin` — enter a Zone
+|===
+
+== 11. The 20 illumos commands to learn first
+
+[cols="1,2",options="header"]
+|===
+|Command |Why it matters
+
+|`svcs -xv` |Diagnose failed or degraded services
+|`svcadm` |Enable, disable, and restart SMF services
+|`ipadm` |Inspect and configure IP interfaces and addresses
+|`dladm` |Inspect network links and physical interfaces
+|`netstat -rn` |Inspect the routing table
+|`prstat` |Monitor processes and resource usage
+|`truss` |Trace system calls and process activity
+|`pfiles` |Inspect open files and sockets
+|`iostat -En` |Inspect disk errors and device statistics
+|`format` |Inspect disks and disk configuration
+|`zpool status` |Diagnose ZFS pool health
+|`zfs list` |List ZFS datasets
+|`dtrace` |Investigate system behavior dynamically
+|`mdb` |Debug kernel and user processes
+|`kstat` |Inspect kernel statistics
+|`cfgadm -al` |Inspect configurable hardware and attachments
+|`prtconf` |Inspect system hardware configuration
+|`auditconfig` |Inspect and configure audit settings
+|`zoneadm` |Manage Zones
+|`pkg` |Manage software on IPS-based distributions
+|===
+
+== 12. Practice lab
+
+Try these exercises in an illumos VM or a suitable lab. Read the manual pages before making configuration changes.
+
+[cols="1,2,2",options="header"]
+|===
+|Topic |Command 1 |Command 2
+
+|System services |`svcs -a` |`svcs -xv`
+|Networking |`ipadm show-addr` |`dladm show-link`
+|Processes |`prstat` |`ps -ef`
+|Storage |`iostat -En` |`zpool status`
+|System calls |`truss -f /usr/bin/true` |`man truss`
+|Logs |`tail -f /var/adm/messages` |`svcs -xv`
+|Hardware |`prtconf` |`cfgadm -al`
+|ZFS |`zfs list` |`zpool list`
+|===
+
+== References
+
+* https://illumos.github.io/docs/[Official illumos documentation]
+* https://smartos.org/man/1/all[SmartOS / illumos command manual]
+* Use `man command-name` on the target system to confirm syntax and options.
+
+== Practical recommendation
+
+For a RHEL administrator moving toward illumos/Helios, prioritize `svcs`/`svcadm`, `ipadm`/`dladm`, `prstat`, `truss`, `pfiles`, `iostat`, and ZFS. These are among the most important practical differences from common Linux administration workflows.
