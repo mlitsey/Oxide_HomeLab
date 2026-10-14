@@ -218,9 +218,11 @@ Since I still had my root session open, I used `visudo` and added myself as a su
 ----
 # root prompt
 export PS1='\[\033[01;31m\]\u\[\033[01;33m\]@\[\033[01;36m\]\h\[\033[01;33m\]:\w \[\033[01;35m\]\$ \[\033[00m\]'
+export TERM=xterm-256color # fix terminal issues if using something like Ghostty
 
 # user prompt
 export PS1='\[\033[01;32m\]\u\[\033[01;33m\]@\[\033[01;36m\]\h\[\033[01;33m\]:\w \[\033[01;35m\]\$ \[\033[00m\]'
+export TERM=xterm-256color # fix terminal issues if using something like Ghostty
 ----
 
 image::./assets/sudo_fixed.png[]  

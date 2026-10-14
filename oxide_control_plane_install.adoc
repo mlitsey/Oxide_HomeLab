@@ -1,0 +1,80 @@
+= Installing Oxide Control Plane
+[[top]]
+:toc:
+:toclevels: 1
+:sectnums:
+:icons: font
+:source-highlighter: rouge 
+:top-of-page: <<top, Top of Page>>   
+
+link:./README.md[Front Page Link]  
+
+== Intro
+
+I'll be using the setup demonstrated by https://matthewsanabria.com/[Matthew Sanabria] on https://youtu.be/qwXtS0-r1uQ?si=B8dbVxtm1Kt5Qcmf[YouTube] to do my initial setup.  
+
+Documentation can be found in the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#prerequisites[how-to-run.adoc] document on GitHub.  
+
+== Install
+
+I want to log what I'm doing on the server and have choosen to use `tmux` to maintain my session between disconnects.  You can find tmux commands https://tmuxcheatsheet.com/[here].  I also use link:./tmux-global-logging.sh[this script] to perform logging while using tmux.  You could also use the `script` command if you don't want to install tmux.  
+
+Download the Omicron repository to the Helios server.  
+
+[source,bash]
+----
+mkdir ~/Projects
+cd ~/Projects
+git clone https://github.com/oxidecomputer/omicron.git
+----
+
+Now I have a directory called `omicron` in my Projects directory.  
+
+=== Networking
+
+I have a lot of open addresses on my VLAN and am choosing not to setup the "external" https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#external-networking[network].  
+
+=== Machine Type
+
+`non-gimlet` since I'm not using real Oxide equipment.  
+
+=== Prerequisite software
+
+[source,bash]
+----
+cd ~/Projetcs/omicron
+source env.sh
+./tools/install_prerequisites.sh 
+----
+
+I ran into an issue with the `cargo` path.  I installed it as root and my user account couldn't find it.  
+
+[source,bash]
+----
+./tools/install_builder_prerequisites.sh: line 97: cargo: command not found
+Failed to run command -- will try 2 more times
+./tools/install_builder_prerequisites.sh: line 97: cargo: command not found
+Failed to run command -- will try 1 more times
+./tools/install_builder_prerequisites.sh: line 97: cargo: command not found
+
+# check for cargo
+mlitsey@r730xd01-helios:~ $ which cargo
+no cargo in /home/mlitsey/Projects/omicron/out/mg-ddm/root/opt/oxide/mg-ddm/bin /home/mlitsey/Projects/omicron/out/mgd/root/opt/oxide/mgd/bin /home/mlitsey/Projects/omicron/out/dendrite-stub/bin /home/mlitsey/Projects/omicron/out/clickhouse /home/mlitsey/Projects/omicron/out/cockroachdb/bin /usr/bin /usr/sbin /sbin /usr/gnu/bin /opt/ooce/bin /opt/ooce/sbin /usr/local/bin /usr/local/bin
+
+mlitsey@r730xd01-helios:~ $ sudo -i
+The illumos Project     helios-3.0.23976        May 2026
+You have new mail.
+
+root@r730xd01-helios:~ # which cargo
+/root/.cargo/bin/cargo
+----
+
+I'll switch over to the root account and run the commands again.  
+
+
+{top-of-page}
+
+== Build and deploy Omicron
+
+Documentation is https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#build-and-deploy-omicron[here].  
+
