@@ -66,7 +66,7 @@ Failed to run command -- will try 1 more times
 
 # check for cargo
 mlitsey@r730xd01-helios:~ $ which cargo
-no cargo in /home/mlitsey/Projects/omicron/out/mg-ddm/root/opt/oxide/mg-ddm/bin /home/mlitsey/Projects/omicron/out/mgd/root/opt/oxide/mgd/bin /home/mlitsey/Projects/omicron/out/dendrite-stub/bin /home/mlitsey/Projects/omicron/out/clickhouse /home/mlitsey/Projects/omicron/out/cockroachdb/bin /usr/bin /usr/sbin /sbin /usr/gnu/bin /opt/ooce/bin /opt/ooce/sbin /usr/local/bin /usr/local/bin
+no cargo in $PATH
 
 mlitsey@r730xd01-helios:~ $ sudo -i
 The illumos Project     helios-3.0.23976        May 2026
@@ -83,5 +83,129 @@ I'll switch over to the root account and run the commands again.
 
 == Build and deploy Omicron
 
-Documentation is https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#build-and-deploy-omicron[here].  
+Reminder that the documentation is located https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#build-and-deploy-omicron[here].  
+
+[source,bash]
+----
+cargo xtask virtual-hardware create \
+   --vdev-dir /scratch_vdev \
+   --gateway-ip 192.168.35.1 \
+   --pxa-start 192.168.35.180 \
+   --pxa-end 192.168.35.200
+
+
+Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.68s
+     Running `target/debug/xtask virtual-hardware create --vdev-dir /scratch_vdev --gateway-ip 192.168.35.1 --pxa-start 192.168.35.180 --pxa-end 192.168.35.200
+`
+error: unexpected argument '--vdev-dir' found
+
+  tip: a similar argument exists: '--vdev-size'
+
+Usage: cargo xtask virtual-hardware create --vdev-size <VDEV_SIZE>
+
+For more information, try '--help'.
+
+root@r730xd01-helios:/home/mlitsey/Projects/omicron # cargo xtask virtual-hardware create --help
+----
+
+Error using the `--vdev-dir` option and it isn't in the help documentation.  It must have been removed at some point.  
+
+.Click to show code
+[%collapsible]
+====
+[source,bash]
+----
+cargo xtask virtual-hardware create \
+   --gateway-ip 192.168.35.1 \
+   --pxa-start 192.168.35.180 \
+   --pxa-end 192.168.35.200
+
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.56s
+     Running `target/debug/xtask virtual-hardware create --gateway-ip 192.168.35.1 --pxa-start 192.168.35.180 --pxa-end 192.168.35.200`
+creating virtual hardware
+creating /var/tmp/m2_0.vdev
+creating /var/tmp/m2_1.vdev
+creating /var/tmp/u2_0.vdev
+creating /var/tmp/u2_1.vdev
+creating /var/tmp/u2_2.vdev
+creating /var/tmp/u2_3.vdev
+creating /var/tmp/u2_4.vdev
+creating /var/tmp/u2_5.vdev
+creating /var/tmp/u2_6.vdev
+creating /var/tmp/u2_7.vdev
+creating /var/tmp/u2_8.vdev
+Simnet net0/sc0_0 exists
+Simnet net1/sc1_0 exists
+Vnic sc0_1 exists
+Using 192.168.35.1 as gateway ip
+Pinging 192.168.35.1 and sleeping (0 / 3)
+Pinging 192.168.35.1 and sleeping (1 / 3)
+Pinging 192.168.35.1 and sleeping (2 / 3)
+Pinging 192.168.35.1 and sleeping (3 / 3)
+using <hidden> as gateway mac
+configuring SoftNPU ARP entry
+configuring SoftNPU proxy ARP
+SoftNPU state:
+  local v6:
+  local v4:
+  router v6_idx:
+  router v6_routes:
+  router v4_idx:
+  router v4_routes:
+  resolver v4:
+  192.168.35.1 -> <hidden>
+  resolver v6:
+  nat v4:
+  nat_v6:
+  attached subnet v4:
+  attached subnet v6:
+  port_mac:
+  proxy arp:
+  192.168.35.180/192.168.35.200: <hidden>
+created virtual hardware
+----
+====
+
+=== Setup Config
+
+.Toggle
+[%collapsible%open]
+====
+[source,bash]
+----
+# set variable for machine type
+root@r730xd01-helios:/home/mlitsey/Projects/omicron # MACHINE="non-gimlet"
+
+# verify it is set
+root@r730xd01-helios:/home/mlitsey/Projects/omicron # echo $MACHINE
+non-gimlet
+
+# check directory
+root@r730xd01-helios:/home/mlitsey/Projects/omicron # ll ./smf/sled-agent/$MACHINE/
+
+# create TLS certificates
+root@r730xd01-helios:/home/mlitsey/Projects/omicron # cargo xtask cert-dev create ./smf/sled-agent/$MACHINE/initial-tls- '*.sys.oxide.test'
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.12s
+     Running `target/debug/xtask cert-dev create ./smf/sled-agent/non-gimlet/initial-tls- '*.sys.oxide.test'`
+   Compiling usdt-macro v0.5.0
+   Compiling usdt-attr-macro v0.5.0
+   Compiling memmap v0.7.0
+   Compiling yasna v0.5.2
+   Compiling pem v3.0.6
+   Compiling rcgen v0.12.1
+   Compiling usdt v0.5.0
+   Compiling tokio-dtrace v0.1.1
+   Compiling oxide-tokio-rt v0.1.4
+   Compiling cert-dev v0.1.0 (/home/mlitsey/Projects/omicron/dev-tools/cert-dev)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.30s
+     Running `target/debug/cert-dev create ./smf/sled-agent/non-gimlet/initial-tls- '*.sys.oxide.test'`
+wrote certificate to ./smf/sled-agent/non-gimlet/initial-tls-cert.pem
+wrote private key to ./smf/sled-agent/non-gimlet/initial-tls-key.pem
+----
+====
+
+
+There is going to be a lot to setup in the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#rack-setup-configuration[configuration files]. 
 
