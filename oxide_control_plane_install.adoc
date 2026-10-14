@@ -15,7 +15,7 @@ I'll be using the setup demonstrated by https://matthewsanabria.com/[Matthew San
 
 Documentation can be found in the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#prerequisites[how-to-run.adoc] document on GitHub.  
 
-== Install
+== Install prerequisites
 
 I want to log what I'm doing on the server and have choosen to use `tmux` to maintain my session between disconnects.  You can find tmux commands https://tmuxcheatsheet.com/[here].  I also use link:./tmux-global-logging.sh[this script] to perform logging while using tmux.  You could also use the `script` command if you don't want to install tmux.  
 
@@ -23,6 +23,13 @@ Download the Omicron repository to the Helios server.
 
 [source,bash]
 ----
+# install tmux
+sudo pkg install tmux
+
+# start tmux session or attach to session called mlitsey
+tmux new-session -A -s mlitsey
+
+# Get the omicron repository
 mkdir ~/Projects
 cd ~/Projects
 git clone https://github.com/oxidecomputer/omicron.git
