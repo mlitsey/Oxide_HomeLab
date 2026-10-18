@@ -209,3 +209,8 @@ wrote private key to ./smf/sled-agent/non-gimlet/initial-tls-key.pem
 
 There is going to be a lot to setup in the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#rack-setup-configuration[configuration files]. 
 
+
+
+
+
+**ON HOLD UNTIL SEVER IS FIXED OR REPLACED**
