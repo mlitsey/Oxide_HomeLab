@@ -23,6 +23,21 @@ Download the Omicron repository to the Helios server.
 
 [source,bash]
 ----
+# create mount point for scripts/programs to survive updates/reboots/shutdowns
+pfexec zfs create -o mountpoint=/usr/local rpool/local
+
+# check
+zfs list
+
+# create directories
+pfexec mkdir -p /usr/local/bin
+
+# create the script
+vim /usr/local/bin/tmux-global-logging.sh
+
+# set permissions: 
+pfexec chmod 755 /usr/local/bin/tmux-global-logging.sh
+
 # install tmux
 sudo pkg install tmux
 
@@ -214,3 +229,8 @@ There is going to be a lot to setup in the https://github.com/oxidecomputer/omic
 
 
 **ON HOLD UNTIL SEVER IS FIXED OR REPLACED**
+
+2026-10-23 update: server is giving intermittent CPU panic
+
+image::./assets/cpu-panic.png[]  
+

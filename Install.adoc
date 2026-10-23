@@ -231,3 +231,33 @@ At this point I continued with the installation steps from https://github.com/ox
 
 
 {top-of-page}  
+
+== Secure SSH
+
+I have the system connected to my main network, so I'm going to make sure that `root` ssh is disabled.  
+
+[source,bash]
+----
+pfexec grep -i permitrootlogin /etc/ssh/sshd_config
+
+# mine was set to this, we want it changed now that our user account is setup  
+PermitRootLogin without-password
+
+# change the setting to "no"
+pfexec vim /etc/ssh/sshd_config
+    PermitRootLogin no
+
+# you can also add specific users
+AllowUsers mlitsey
+
+# Save the file and test before restarting the service
+which sshd
+/usr/sbin/sshd -t
+/usr/sbin/sshd -T |grep -i permitrootlogin
+/usr/sbin/sshd -T |grep -i allow
+
+# restart the service
+pfexec svcadm restart ssh
+pfexec svcs ssh
+----
+

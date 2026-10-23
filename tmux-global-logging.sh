@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# place in /usr/local/bin/tmux-global-logging.sh
+# pfexec zfs create -o mountpoint=/usr/local rpool/local
+# pfexec mkdir -p /usr/local/bin
+# vim /usr/local/bin/tmux-global-logging.sh
 # set permissions: sudo chmod 755 /usr/local/bin/tmux-global-logging.sh
 # add to .bashrc or profile 
 # /usr/local/bin/tmux-global-logging.sh
