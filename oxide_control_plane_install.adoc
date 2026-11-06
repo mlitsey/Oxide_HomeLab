@@ -341,3 +341,44 @@ Caused by:
 
 I tried updating Helios and did a reboot but ran into the same error. 
 
+I looked for error documentation in the repository, but didn't see anything mentioning this.  I then asked Claude and it came back with an Oxide tool to fix the issue. 
+
+====
+That error means the userland OPTE tooling in your Omicron checkout is newer than the `xde` kernel driver running on your system. The userland expects API version 44, and the kernel module speaks version 42. The Omicron source pins a specific OPTE version in `Cargo.toml`, and the kernel side comes from the `helios-netdev` package repo, so the two have drifted. Oxide's own `install_opte.sh` was designed to handle this, and the Omicron code even tells developers to use it for a mismatched kernel.
+
+**1. Re-run the OPTE installer from your current checkout**
+
+From the root of your omicron repo (the same commit you're building):
+
+```
+pfexec ./tools/install_opte.sh
+```
+
+The script adds the OPTE and XDE package repositories (the `helios-netdev` publisher), runs `pkg update` for the OS bits that `xde` depends on, and installs `driver/network/opte`. If you've already run `./tools/install_prerequisites.sh`, it normally calls this too, but re-running it directly is harmless.
+
+**2. Reboot into the new boot environment**
+
+This is the step most likely to be missed. `pkg update` typically creates a new boot environment, and the old kernel keeps running until you reboot. Until then you'll see the same error even though the package is updated.
+
+```
+pfexec shutdown -y -g0 -i6
+```
+
+Use the full reboot, not `reboot -f`, so the new kernel and driver are loaded cleanly.
+
+**3. Verify**
+
+```
+beadm list
+pkg list driver/network/opte
+```
+
+`beadm list` should show your new BE marked `NR` (active now and on reboot). Then re-run whatever failed.
+
+**If it still reports a mismatch**
+
+The Omicron repo has a `tools/opte_version_override` file, and an `OPTE_COMMIT` there changes where the installer pulls OPTE from. On `main` it should be empty. If you're on a branch or checkout where it's set, or your checkout and the installed package come from different commits, the versions will differ. Run `git status` and `git log -1` to confirm you're on a clean, current commit, then re-run the installer.
+
+If a previous `install_opte.sh` run was interrupted, there's a known issue where a failure partway through can leave a corrupt file that breaks `pkg` and isn't fixed by re-running. If `pkg` itself starts erroring, tell me the message and I'll help work out the cleanup.
+
+====
