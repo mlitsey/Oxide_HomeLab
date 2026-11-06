@@ -322,3 +322,22 @@ Error: Digest mismatch on pumpkind-gz: Saw 6f9113b819adfd9de80ac30ea2044c39573cf
 Caused by:
     Failed validating download of https://buildomat.eng.oxide.computer/public/file/oxidecomputer/pumpkind/image/a9564ed157edcc34ee1edfad7287660db398a6c7/pumpkind-gz.tar
 ----
+
+At this point I ran `git pull` to get the latest updates, checked my configuration file to verify it still had my settings and ran the `cargo` commands again. 
+
+At the install I ran into a version mismatch.
+
+[source,bash]
+----
+pfexec ./target/release/omicron-package install
+
+Logging to: /home/mlitsey/Projects/omicron/out/LOG
+
+Error: Failure interacting with the OPTE ioctl(2) interface: command ListPorts failed: BadApiVersion { user: 44, kernel: 42 }
+
+Caused by:
+    command ListPorts failed: BadApiVersion { user: 44, kernel: 42 }
+----
+
+I tried updating Helios and did a reboot but ran into the same error. 
+
