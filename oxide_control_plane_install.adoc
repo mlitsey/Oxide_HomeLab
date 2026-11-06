@@ -39,7 +39,7 @@ vim /usr/local/bin/tmux-global-logging.sh
 pfexec chmod 755 /usr/local/bin/tmux-global-logging.sh
 
 # install tmux
-sudo pkg install tmux
+sudo pkg install tmux htop
 
 # start tmux session or attach to session called mlitsey
 tmux new-session -A -s mlitsey
@@ -100,8 +100,14 @@ I'll switch over to the root account and run the commands again.
 
 Reminder that the documentation is located https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#build-and-deploy-omicron[here].  
 
+.Click to show code
+[%collapsible]
+====
 [source,bash]
 ----
+##### DO NOT USE -- vdev-dir DOES NOT WORK #####
+
+
 cargo xtask virtual-hardware create \
    --vdev-dir /scratch_vdev \
    --gateway-ip 192.168.35.1 \
@@ -122,11 +128,12 @@ For more information, try '--help'.
 
 root@r730xd01-helios:/home/mlitsey/Projects/omicron # cargo xtask virtual-hardware create --help
 ----
+====
 
 Error using the `--vdev-dir` option and it isn't in the help documentation.  It must have been removed at some point.  
 
-.Click to show code
-[%collapsible]
+.Toggle
+[%collapsible%open]
 ====
 [source,bash]
 ----
@@ -224,9 +231,63 @@ wrote private key to ./smf/sled-agent/non-gimlet/initial-tls-key.pem
 
 There is going to be a lot to setup in the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#rack-setup-configuration[configuration files]. 
 
+Here is what is configured by default.
+
+.Toggle
+[%collapsible]
+====
+[source,bash]
+----
+cat ~/Projects/omicron/smf/sled-agent/$MACHINE/config-rss.toml |grep -vE "^#"
+
+bootstrap_discovery.type = "only_ours"
+
+ntp_servers = [ "0.pool.ntp.org" ]
+dns_servers = [ "1.1.1.1", "9.9.9.9" ]
+
+external_dns_zone_name = "oxide.test"
+
+external_dns_ips = [ "192.168.1.20", "192.168.1.21" ]
+
+external_certificates = []
+
+[[service_ip_pools]]
+name = "oxide-service-pool-v4"
+description = "IPv4 IP Pool for Oxide Services"
+ranges = [ { first = "192.168.1.20", last = "192.168.1.29" } ]
 
 
+[rack_network_config]
+rack_subnet = "fd00:1122:3344:0100::/56"
 
+infra_ip_first = "192.168.1.30"
+infra_ip_last = "192.168.1.30"
+
+bgp = []
+
+[[rack_network_config.ports]]
+routes = [{nexthop = "192.168.1.199", destination = "0.0.0.0/0"}]
+addresses = [{address = {type = "static", ip_net = "192.168.1.30/24"}}]
+port = "qsfp0"
+uplink_port_speed = "40G"
+uplink_port_fec = "none"
+autoneg = false
+switch = "switch0"
+bgp_peers = []
+
+
+[allowed_source_ips]
+allow = "any"
+
+
+external_jumbo_frames_opt_in_enabled = false
+
+[recovery_silo]
+silo_name = "recovery"
+user_name = "recovery"
+user_password_hash = "<hash info here>"
+----
+====
 
 **ON HOLD UNTIL SEVER IS FIXED OR REPLACED**
 
@@ -234,3 +295,30 @@ There is going to be a lot to setup in the https://github.com/oxidecomputer/omic
 
 image::./assets/cpu-panic.png[]  
 
+2026-11-05 update: got another used Dell R730xd to test with.  
+
+I setup my configuration `./smf/sled-agent/$MACHINE/config-rss.toml` for network communications then proceeded with the rest of the install. 
+
+Choosing defaults that made sense for my setup and testing. I ran the following commands. 
+[source,bash]
+----
+# setup
+cargo run --release --bin omicron-package -- target create --help
+
+# Configure for non-gimlet hardware
+cargo run --release --bin omicron-package -- -t default target create -p dev -m non-gimlet -r single-sled -c single-node
+
+# Package install
+cargo run --release --bin omicron-package -- package
+
+----
+
+
+Ran into a problem downloading one of the files
+[source,bash]
+----
+Error: Digest mismatch on pumpkind-gz: Saw 6f9113b819adfd9de80ac30ea2044c39573cfed5414e4554440ea8d49c0a6375, expected b7b356d7fce91de1f71948741ee92e673d26731327716bf645909e0515367f21
+
+Caused by:
+    Failed validating download of https://buildomat.eng.oxide.computer/public/file/oxidecomputer/pumpkind/image/a9564ed157edcc34ee1edfad7287660db398a6c7/pumpkind-gz.tar
+----
