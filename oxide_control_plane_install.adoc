@@ -93,6 +93,9 @@ root@r730xd01-helios:~ # which cargo
 
 I'll switch over to the root account and run the commands again.  
 
+WARNING: I would not choose to do it this way on another install.  Install rust to your account instead.  
+
+
 
 {top-of-page}
 
@@ -341,7 +344,7 @@ Caused by:
 
 I tried updating Helios and did a reboot but ran into the same error. 
 
-I looked for error documentation in the repository, but didn't see anything mentioning this.  I then asked Claude and it came back with an Oxide tool to fix the issue. 
+I looked for error documentation in the repository, but didn't see anything mentioning this.  I then asked Claude and it came back with an Oxide tool to fix the issue. **I needed to source the env.sh again and install the pre-requisites.**
 
 ====
 That error means the userland OPTE tooling in your Omicron checkout is newer than the `xde` kernel driver running on your system. The userland expects API version 44, and the kernel module speaks version 42. The Omicron source pins a specific OPTE version in `Cargo.toml`, and the kernel side comes from the `helios-netdev` package repo, so the two have drifted. Oxide's own `install_opte.sh` was designed to handle this, and the Omicron code even tells developers to use it for a mismatched kernel.
@@ -382,3 +385,22 @@ The Omicron repo has a `tools/opte_version_override` file, and an `OPTE_COMMIT` 
 If a previous `install_opte.sh` run was interrupted, there's a known issue where a failure partway through can leave a corrupt file that breaks `pkg` and isn't fixed by re-running. If `pkg` itself starts erroring, tell me the message and I'll help work out the cleanup.
 
 ====
+
+The install now works and i checks the services for sled-agent.  Looks like I didn't edit my configuration correctly.  I need to set the `external_dns_ips` to something inside the designated pool of addresses.   
+
+[source,bash]
+----
+tail -F $(svcs -L sled-agent)
+
+[ Nov  6 22:09:20 Executing start method ("ctrun -l child -o noorphan,regent /opt/oxide/sled-agent/sled-agent run /opt/oxide/sled-agent/pkg/config.toml &").
+]
+[ Nov  6 22:09:20 Method "start" exited with status 0. ]
+sled-agent: Failed to deserialize config from /opt/oxide/sled-agent/pkg/config-rss.toml
+
+Caused by:
+    External DNS IP 192.168.35.24 is not contained in any service IP pool range
+
+[ Nov  6 22:09:20 Stopping because all processes in service exited. ]
+[ Nov  6 22:09:20 Executing stop method (:kill). ]
+[ Nov  6 22:09:20 Restarting too quickly, changing state to maintenance. ]
+----
