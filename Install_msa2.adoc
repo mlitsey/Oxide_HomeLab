@@ -12,9 +12,9 @@ After multiple issues with the 2 used Dell PowerEdge R730xd servers.  I bought a
 
 The MS-A2 has 4 on-board network interfaces, 2 Intel 10G SFP ports, 1 Intel 2.5G RJ45 port, and 1 Realtek 2.5G RJ45 port.  I plan on using the Intel 2.5G port and on my device it is the RJ45 port beside the SFP port.  The Realtek port is the same chipset that didn't work from the GMKtek minipc. 
 
-2.5Gb LAN(RJ45,Realtek RTL8125) х 1
-2.5Gb LAN(RJ45,Intel I226-V) х 1
-10G SFP+(Intel X710) x 2
+2.5Gb LAN(RJ45,Realtek RTL8125) х 1  
+2.5Gb LAN(RJ45,Intel I226-V) х 1  
+10G SFP+(Intel X710) x 2  
 
 image::./assets/ms-a2_ports.png[]
 
@@ -30,7 +30,9 @@ While in the BIOS I noticed that the Network screen showed the MAC address for e
 
 image::./assets/ms-a2_intel_mac.png[]
 
-== Install
+{top-of-page}
+
+== Helios Install
 
 Back on the Oxide install GitHub https://github.com/oxidecomputer/helios-engvm#initial-install[page] I started stepping through the guide.  
 
@@ -77,6 +79,8 @@ ipadm show-addr
 history -a
 ----
 
+{top-of-page}
+
 === User Setup
 
 I haven't been able to use the commands from the guide directly for this.  I tried multiple times but end up having to remove the `</dev/null` portion of the command.  I pulled the repository and setup the ssh key in my previous attempts.  
@@ -111,6 +115,8 @@ sudo -i
 
 image::./assets/ms-a2_user_setup.png[]
 
+{top-of-page}
+
 === System Setup
 
 This time through I want to try to do everything as my user account.  To do this I'm using the `pfexec` command when needed and as a last restore `sudo -i` to become root for anything that `pfexec` didn't fix.  
@@ -123,3 +129,152 @@ When I ran the system update `pfexec pkg update -v` I was told that pkg was out 
 
 image::./assets/ms-a2_update.png[]
 
+{top-of-page}
+
+== Omicron Install
+
+Returning to the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-run.adoc#prerequisite-software[How to run] document for Omicron.  
+
+=== Prerequisite Software
+
+[source,bash]
+----
+# create mount point for scripts/programs to survive updates/reboots/shutdowns
+pfexec zfs create -o mountpoint=/usr/local rpool/local
+
+# check
+zfs list
+
+# create directories
+pfexec mkdir -p /usr/local/bin
+
+# create the script
+vim /usr/local/bin/tmux-global-logging.sh
+
+# set permissions: 
+pfexec chmod 755 /usr/local/bin/tmux-global-logging.sh
+
+# install tmux
+sudo pkg install tmux htop
+
+# start tmux session or attach to session called mlitsey
+tmux new-session -A -s mlitsey
+
+# Get the omicron repository
+mkdir ~/Projects
+cd ~/Projects
+git clone https://github.com/oxidecomputer/omicron.git
+
+cd omicron
+
+source env.sh
+./tools/install_prerequisites.sh 
+----
+
+You get asked a some questions about installation during this process.  I answered yes to all of them.  
+
+=== Network
+
+[source,bash]
+----
+cargo xtask virtual-hardware create \
+   --gateway-ip 192.168.35.1 \
+   --pxa-start 192.168.35.180 \
+   --pxa-end 192.168.35.200
+----
+
+Later, you can clean up the resources created by cargo xtask virtual-hardware create with:
+
+`cargo xtask virtual-hardware destroy`
+
+=== Certificates
+
+[source,bash]
+----
+# set variable for machine type
+MACHINE="non-gimlet"
+
+# verify it is set
+echo $MACHINE
+
+# check directory
+ll ./smf/sled-agent/$MACHINE/
+
+# create TLS certificates
+cargo xtask cert-dev create ./smf/sled-agent/$MACHINE/initial-tls- '*.sys.oxide.test'
+----
+
+wrote certificate to ./smf/sled-agent/non-gimlet/initial-tls-cert.pem  
+
+wrote private key to ./smf/sled-agent/non-gimlet/initial-tls-key.pem  
+
+{top-of-page}
+
+=== Rack Configuration
+
+[source,bash]
+----
+vim smf/sled-agent/$MACHINE/config-rss.toml
+----
+
+[source,ini]
+----
+external_dns_ips = [ "192.168.35.181", "192.168.35.182" ]
+
+[[service_ip_pools]]
+name = "oxide-service-pool-v4"
+description = "IPv4 IP Pool for Oxide Services"
+ranges = [ { first = "192.168.35.180", last = "192.168.35.200" } ]
+
+infra_ip_first = "192.168.35.192"
+infra_ip_last = "192.168.35.192"
+
+[[rack_network_config.ports]]
+# Routes associated with this port.
+routes = [{nexthop = "192.168.35.1", destination = "0.0.0.0/0"}]
+# Addresses associated with this port.
+addresses = [{address = {type = "static", ip_net = "192.168.35.180/24"}}]
+# Name of the uplink port.  This should always be "qsfp0" when using softnpu.
+port = "qsfp0"
+# The speed of this port.
+uplink_port_speed = "1G"
+----
+
+=== Package Install
+
+Choosing defaults that made sense for my setup and testing. I ran the following commands. 
+[source,bash]
+----
+# setup
+cargo run --release --bin omicron-package -- target create --help
+
+# Configure for non-gimlet hardware
+cargo run --release --bin omicron-package -- -t default target create -p dev -m non-gimlet -r single-sled -c single-node
+
+# Package install
+cargo run --release --bin omicron-package -- package
+
+pfexec ./target/release/omicron-package install
+----
+
+I'm closer to getting it working.  I was abel to see some services using `zoneadm list -cnv` but wasn't able to use `dig` to discover the IP's to use.  
+
+{top-of-page}
+
+=== Clean Up
+
+I'm going to clean up and take another look at my configuration before deploying again.  
+
+[source,bash]
+----
+# To uninstall all Omicron services from a machine:
+
+cargo build --release --bin omicron-package
+pfexec ./target/release/omicron-package uninstall
+
+# Once all the Omicron services are uninstalled, you can also remove the previously created virtual hardware as mentioned above:
+
+cargo xtask virtual-hardware destroy
+----
+
+{top-of-page}

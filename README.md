@@ -11,6 +11,6 @@ I'll also start using [AsciiDoc](https://docs.asciidoctor.org/asciidoc/latest/) 
 
 ## Info Pages
 [Installation](./Install_msa2.adoc)  
-[Bad Install Attempts](./Install.adoc)
+[Bad Install Attempts](./Install.adoc)  
 [Command Comparison](./linux-to-illumos-command-reference.adoc)  
 [Oxide Control Plane Installation](./oxide_control_plane_install.adoc)  
