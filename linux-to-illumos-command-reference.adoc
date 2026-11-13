@@ -164,6 +164,7 @@ Legend:
 |98 |`lsof` |`pfiles PID` for process file descriptors
 |99 |`fuser` |`fuser`
 |100 |`pidof` |`pgrep -x process_name`, where appropriate
+|101 |`lscpu` |`psrinfo -pv`, core count and processor type
 |===
 
 === Important process-troubleshooting differences

@@ -1,5 +1,4 @@
 = Install on New Hardware
-
 [#top]
 :toc:
 :toclevels: 1
@@ -8,7 +7,8 @@
 :source-highlighter: rouge 
 :top-of-page: <<top, Top of Page>>   
 
-After multiple issues with the 2 used Dell PowerEdge R730xd servers.  I bought a bare bones https://store.minisforum.com/products/minisforum-ms-a2-workstation[Minisforum MS-A2] 8945HX and used the RAM and NVME from my GMKtec minipc to get it working.  I chose this based on the https://oxide.computer/blog/voxel-labs[post] by https://www.linkedin.com/in/stevekaram/[Steve Karam] about Voxel.  Steve used a 9955HX with 96 GB RAM, but my setup should be enough for playing around and testing.  
+
+After multiple issues with the 2 used Dell PowerEdge R730xd servers.  I bought a bare bones https://store.minisforum.com/products/minisforum-ms-a2-workstation[Minisforum MS-A2] 8945HX and used the half of the RAM (32 GB) from my GMKtec minipc and a 2 TB NVME to get it working.  I chose this based on the https://oxide.computer/blog/voxel-labs[post] by https://www.linkedin.com/in/stevekaram/[Steve Karam] about Voxel.  Steve used a 9955HX with 96 GB RAM, but my setup should be enough for playing around and testing.  
 
 The MS-A2 has 4 on-board network interfaces, 2 Intel 10G SFP ports, 1 Intel 2.5G RJ45 port, and 1 Realtek 2.5G RJ45 port.  I plan on using the Intel 2.5G port and on my device it is the RJ45 port beside the SFP port.  The Realtek port is the same chipset that didn't work from the GMKtek minipc. 
 
@@ -137,6 +137,8 @@ Returning to the https://github.com/oxidecomputer/omicron/blob/main/docs/how-to-
 
 === Prerequisite Software
 
+Adding some extras here that I am used to having on RHEL systems.  I like to keep logs of what I've done and this makes it easier.  TMUX also keeps my session alive if my connection drops.  I prefer using `htop` instead of `top` also.  The mount point was created so my tmux logging script wouldn't get destroyed during update cycles.  
+
 [source,bash]
 ----
 # create mount point for scripts/programs to survive updates/reboots/shutdowns
@@ -171,14 +173,14 @@ source env.sh
 ./tools/install_prerequisites.sh 
 ----
 
-You get asked a some questions about installation during this process.  I answered yes to all of them.  
+You get asked a some questions about installation during this process.  I answered `yes` to all of them.  
 
 === Network
 
 [source,bash]
 ----
 cargo xtask virtual-hardware create \
-    --physical-link igc0 \
+    --physical-link igc0 \ # added after troubleshooting
     --gateway-ip 192.168.35.1 \
     --pxa-start 192.168.35.180 \
     --pxa-end 192.168.35.200
@@ -357,13 +359,15 @@ image::./assets/ms-a2_vnic.png[]
 
 * There are now around 30 ID's when I run `zoneadm list -cnv`  
 
+{top-of-page}
+
 === Success
 
-Finally I have a system that is up and running.
+Finally, I have a system that is up and running.
 
 `dig recovery.sys.oxide.test @192.168.35.180 +short` returns 3 IP's
 
-Using Chrome I couldn't get to the URL but found I could reach the page from Safari.  
+Using Chrome I couldn't get to the URL but found I could reach the page from Safari.  This seems to be caused by local network access settings in Chrome.  
 
 From my MAC I ran these
 [source,bash]
@@ -384,7 +388,7 @@ Request timeout for icmp_seq 3
 --- 192.168.35.182 ping statistics ---
 5 packets transmitted, 0 packets received, 100.0% packet loss
 
-# apr shows the same MAC 
+# apr shows the same MAC from `dladm show-vnic` on the Helios host
 arp -a |grep 192.168.35.182
 ? (192.168.35.182) at a8:e1:de:1:70:1d on en0 ifscope [ethernet]
 
@@ -405,4 +409,14 @@ ip_address: 192.168.35.182
 ----
 
 image::./assets/oxide_login.png[]
+
+{top-of-page}
+
+== Performance
+
+Looking at `htop` after the system is running show that the 32 GB of RAM is completely used.  VCPU usage is low, but I haven't started any projects.  Running `zfs list` shows a lot more entries now, but I still have 1.65 TB remaining.  
+
+Is this system like a database and using all the available memory?  Is it taken at this time to allocate to projects or do I just need to add more?  Until prices come back down (2026-11-13) I probably won't be adding more.  If I get the Dell servers running properly I'll see what gets used there.  
+
+image::./assets/ms-a2_htop.png[]  
 
