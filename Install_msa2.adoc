@@ -178,9 +178,10 @@ You get asked a some questions about installation during this process.  I answer
 [source,bash]
 ----
 cargo xtask virtual-hardware create \
-   --gateway-ip 192.168.35.1 \
-   --pxa-start 192.168.35.180 \
-   --pxa-end 192.168.35.200
+    --physical-link igc0 \
+    --gateway-ip 192.168.35.1 \
+    --pxa-start 192.168.35.180 \
+    --pxa-end 192.168.35.200
 ----
 
 Later, you can clean up the resources created by cargo xtask virtual-hardware create with:
@@ -219,25 +220,25 @@ vim smf/sled-agent/$MACHINE/config-rss.toml
 
 [source,ini]
 ----
-external_dns_ips = [ "192.168.35.181", "192.168.35.182" ]
+external_dns_ips = [ "192.168.35.180", "192.168.35.181" ]
 
 [[service_ip_pools]]
 name = "oxide-service-pool-v4"
 description = "IPv4 IP Pool for Oxide Services"
-ranges = [ { first = "192.168.35.180", last = "192.168.35.200" } ]
+ranges = [ { first = "192.168.35.180", last = "192.168.35.189" } ]
 
-infra_ip_first = "192.168.35.192"
-infra_ip_last = "192.168.35.192"
+infra_ip_first = "192.168.35.190"
+infra_ip_last = "192.168.35.190"
 
 [[rack_network_config.ports]]
 # Routes associated with this port.
 routes = [{nexthop = "192.168.35.1", destination = "0.0.0.0/0"}]
 # Addresses associated with this port.
-addresses = [{address = {type = "static", ip_net = "192.168.35.180/24"}}]
+addresses = [{address = {type = "static", ip_net = "192.168.35.190/24"}}]
 # Name of the uplink port.  This should always be "qsfp0" when using softnpu.
 port = "qsfp0"
 # The speed of this port.
-uplink_port_speed = "1G"
+uplink_port_speed = "40G"
 ----
 
 === Package Install
@@ -278,3 +279,130 @@ cargo xtask virtual-hardware destroy
 ----
 
 {top-of-page}
+
+=== Troubleshooting
+
+I did some troubleshooting using Calude and it gave me some great commands for getting into the sled-agent services using `zlogin`.  It looks like my network wasn't picking the correct `physical-link` and I need to add it to the creation command.  
+
+[source,bash]
+----
+cargo xtask virtual-hardware create \
+    --physical-link igc0 \
+    --gateway-ip 192.168.35.1 \
+    --pxa-start 192.168.35.180 \
+    --pxa-end 192.168.35.200
+----
+
+[source,bash]
+----
+
+zoneadm list -cnv
+pfexec tail -n 100 $(svcs -L sled-agent)
+
+# check inside the service for any errors
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 svcs -xv
+
+# check time tracking
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 chronyc tracking
+
+# check config for time and dns severs
+grep -n -E 'ntp_servers|dns_servers' smf/sled-agent/$MACHINE/config-rss.toml
+
+# check host for errors
+svcs -xv
+
+# check inside service for time sources
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 chronyc sources
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 chronyc activity
+
+# check service networking ability
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 ipadm show-addr
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 netstat -rn
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 ping 192.168.35.1
+pfexec zlogin oxz_ntp_5c16c1ae-f5bd-4bd3-9e06-b17f1fbcca18 ping 1.1.1.1
+
+# show host link
+dladm show-link
+
+# show host virtual nic
+dladm show-vnic
+
+# uninstall and fix
+cargo build --release --bin omicron-package
+pfexec ./target/release/omicron-package uninstall
+cargo xtask virtual-hardware destroy
+
+cargo xtask virtual-hardware create \
+    --physical-link igc0 \
+    --gateway-ip 192.168.35.1 \
+    --pxa-start 192.168.35.180 \
+    --pxa-end 192.168.35.200
+
+# verify host virtual nic
+dladm show-vnic
+----
+
+* Get the UUID for NTP check (ID 14)
+
+image::./assets/ms-a2_ntp_uuid.png[]
+
+* Bad Config
+
+image::./assets/ms-a2_vnic_bad.png[]
+
+
+* Fixed
+
+image::./assets/ms-a2_vnic.png[]
+
+* There are now around 30 ID's when I run `zoneadm list -cnv`  
+
+=== Success
+
+Finally I have a system that is up and running.
+
+`dig recovery.sys.oxide.test @192.168.35.180 +short` returns 3 IP's
+
+Using Chrome I couldn't get to the URL but found I could reach the page from Safari.  
+
+From my MAC I ran these
+[source,bash]
+----
+# check external dns 
+dig recovery.sys.oxide.test @192.168.35.180 +short
+192.168.35.183
+192.168.35.184
+192.168.35.182
+
+# ping fails
+PING 192.168.35.182 (192.168.35.182): 56 data bytes
+Request timeout for icmp_seq 0
+Request timeout for icmp_seq 1
+Request timeout for icmp_seq 2
+Request timeout for icmp_seq 3
+^C
+--- 192.168.35.182 ping statistics ---
+5 packets transmitted, 0 packets received, 100.0% packet loss
+
+# apr shows the same MAC 
+arp -a |grep 192.168.35.182
+? (192.168.35.182) at a8:e1:de:1:70:1d on en0 ifscope [ethernet]
+
+# curl is working
+curl -ik --resolve recovery.sys.oxide.test:443:192.168.35.182 https://recovery.sys.oxide.test
+HTTP/2 302
+location: /login/recovery/local?redirect_uri=%2F
+x-request-id: 6ad6cbff-0978-4ed3-8423-f2acbb2219c0
+date: Fri, 13 Nov 2026 12:03:26 GMT
+
+# added entry to hosts file
+sudo sh -c 'echo "192.168.35.182 recovery.sys.oxide.test" >> /etc/hosts'
+
+# check DNS
+dscacheutil -q host -a name recovery.sys.oxide.test
+name: recovery.sys.oxide.test
+ip_address: 192.168.35.182
+----
+
+image::./assets/oxide_login.png[]
+
